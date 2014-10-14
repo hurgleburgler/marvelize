@@ -6,6 +6,8 @@
 
     <!-- Le styles -->
     <link href="//netdna.bootstrapcdn.com/bootswatch/3.1.1/superhero/bootstrap.min.css" rel="stylesheet" type=text/css />
+    <link href="/static/css/select2.css" rel="stylesheet" type=text/css />
+    <link href="/static/css/select2-bootstrap.css" rel="stylesheet" type=text/css />
     <link href="/static/css/marvelize.css" rel="stylesheet" type=text/css />
     <!--<link href="/static/icomoon/icomoon.css" rel="stylesheet" type=text/css />-->
     <!--<link rel="shortcut icon" type="image/png" href="/static/img/favicon.ico"/>-->
@@ -14,7 +16,10 @@
     <!-- Le scripts -->
     <!--<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular.min.js"></script>-->
     <!--<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular-route.js"></script>-->  
-    <!--<script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.0.js"></script>--> 
+    <!--<script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.0.js"></script>-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="/static/js/select2.js"></script>
     <script src="/static/js/underscore-min.js"></script>
     <script src="/static/js/underscore.string.min.js"></script>
     <script type="text/javascript"> _.mixin(_.str.exports()) </script>
@@ -22,9 +27,38 @@
   </head>
   
   <body>
-    <div class="jumbotron">
-      <h1>marvelize</h1>
-      <p>A good beginning is only half the task.</p>
+    <div class="top-section jumbotron">
+      <h1 class="text-center">Welcome to Marvelize!</h1>
+      <p class="text-center" id="action-hint">Please choose two unique Marvel characters:</p>
+      <div class="row">
+        <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+          <form role="form">
+            <div class="row">
+              <div class="col-xs-6 col-sm-6 col-md-6">
+                <div class="form-group">
+                  <label class="sr-only" for="character-input-1">Character 1</label>
+                  <input id="character-input-1" class="character-input form-control input-lg" type="hidden">
+                </div>
+              </div>
+              <div class="col-xs-6 col-sm-6 col-md-6">
+                <div class="form-group">
+                  <div class="form-group">
+                    <label class="sr-only" for="character-input-2">Character 2</label>
+                    <input id="character-input-2" class="character-input form-control input-lg" type="hidden">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="button-row row">
+              <div class="col-xs-12">
+                <div class="form-group">
+                  <button id="graph-it" class="btn btn-primary btn-lg center-block" role="button">See Team Ups!</button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </body>
 </html>

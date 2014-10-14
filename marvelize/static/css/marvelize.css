@@ -1,0 +1,17 @@
+.link {
+  stroke: #ccc;
+}
+
+.node text {
+  pointer-events: none;
+  font: 10px sans-serif;
+}
+
+.col-centered{
+  float: none;
+  margin: 0 auto;
+}
+
+.top-section.well {
+  margin-bottom: 0;
+}
