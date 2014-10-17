@@ -7,15 +7,15 @@
   font: 10px sans-serif;
 }
 
-.col-centered{
-  float: none;
-  margin: 0 auto;
-}
-
 .top-section.well {
   margin-bottom: 0;
 }
 
 #graph-container {
   width: 100%;
+}
+
+.attribution {
+  position: absolute;
+  bottom: 0;
 }
