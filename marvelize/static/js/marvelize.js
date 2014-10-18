@@ -3,22 +3,33 @@ function MarvelAPI(request_data, server, path) {
   this.request_data = request_data;
   this.server = server || 'http://gateway.marvel.com:80';
   this.path = path || 'v1/public/characters';
+  this.limit_calls = 10;
+  this.counter = 0;
 
-  this.getData = function(category, chain, params) {
+  // Just a straight up json call to get data, returning the promise
+  this.getData = function(category, params) {
+    return $.getJSON(this.getURL(category), $.extend({}, this.request_data, params));
+  };
+
+  // The Marvel API limits the number of entries returned by 100, so lets chain them to get all the
+  // data available
+  this.getAllData = function(category, params, extra_data) {
     var that = this;
-    return $.getJSON(this.getURL(category), $.extend(this.request_data, params));
-      //.then(function(response) {
-      //  if (chain) {
-      //    var this_data = response.data;
-      //    console.log(this_data);
-      //    if (this_data.total > (this_data.count + this_data.offset)) {
-      //      console.log(that);
-      //      return that.getData(category, chain, $.extend(that.request_data, {
-      //        offset: this_data.offset + this_data.count
-      //      }));
-      //    }
-      //  }
-      //});
+    return this.getData(category, params).then(function(response) {
+      that.counter++;
+      var this_data = response.data;
+      extra_data = extra_data || [];
+      this_data.results = this_data.results.concat(extra_data);
+      if ((this_data.total <= (this_data.count + this_data.offset)) || (that.counter > that.limit_calls)) {
+        that.counter = 0;
+        response.data.count = response.data.results.length;
+        return response;
+      } else {
+        return that.getAllData(category, $.extend({}, that.request_data, {
+          offset: this_data.offset + this_data.count
+        }), response.data.results);
+      }
+    });
   };
 
   this.getBaseURL = function() {
@@ -207,7 +218,7 @@ $(document).ready(function() {
 
     // The next is a whee bit confusing
     // First, we need to get the character API to obtain the thumbnail
-    myMarvel.getData(char1, true).then(function(response) {
+    myMarvel.getData(char1).then(function(response) {
 
       // Store the entire character object
       character1 = response.data.results[0];
@@ -221,7 +232,7 @@ $(document).ready(function() {
       }, growl_config));
 
       // Return the promise
-      return myMarvel.getData(character1.id + '/' + comparison_data, true);
+      return myMarvel.getAllData(character1.id + '/' + comparison_data);
 
     // Now, we need to get the entire series of that character
     }).then(function(response) {
@@ -238,7 +249,7 @@ $(document).ready(function() {
       }, growl_config));
 
       // Get the secondary character information
-      return myMarvel.getData(char2, true);
+      return myMarvel.getData(char2);
 
     // Now, character #2, to obtain their thumbnail
     }).then(function(response) {
@@ -255,7 +266,7 @@ $(document).ready(function() {
       }, growl_config));
 
       // Return the promise
-      return myMarvel.getData(character2.id + '/' + comparison_data, true);
+      return myMarvel.getAllData(character2.id + '/' + comparison_data);
 
     // Now, character #2, to obtain their series
     }).then(function(response) {
