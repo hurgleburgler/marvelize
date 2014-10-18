@@ -34,7 +34,7 @@ function MarvelAPI(request_data, server, path) {
       nodes: [{
         name: character.name,
         id: character.id,
-        image: character.thumbnail.path + '.' + character.thumbnail.extension,
+        image: character.thumbnail ? character.thumbnail.path + '.' + character.thumbnail.extension : '',
         group: 0
       }],
       links: []
@@ -262,7 +262,7 @@ $(document).ready(function() {
     }
   };
   $char1_input.select2($.extend(true, select_options, {placeholder: 'Hawkeye'}));
-  $char2_input.select2($.extend(true, select_options, {placeholder: 'Black Widow'}));
+  $char2_input.select2($.extend(true, select_options, {placeholder: 'Spider-Man'}));
 
   // Disable form submission, we'll take care of the ajax calls ourself
   $form.submit(function(e) {
