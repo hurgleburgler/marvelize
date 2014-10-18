@@ -4,8 +4,21 @@ function MarvelAPI(request_data, server, path) {
   this.server = server || 'http://gateway.marvel.com:80';
   this.path = path || 'v1/public/characters';
 
-  this.getData = function(category) {
-    return $.getJSON(this.getURL(category), this.request_data);
+  this.getData = function(category, chain, params) {
+    var that = this;
+    return $.getJSON(this.getURL(category), $.extend(this.request_data, params));
+      //.then(function(response) {
+      //  if (chain) {
+      //    var this_data = response.data;
+      //    console.log(this_data);
+      //    if (this_data.total > (this_data.count + this_data.offset)) {
+      //      console.log(that);
+      //      return that.getData(category, chain, $.extend(that.request_data, {
+      //        offset: this_data.offset + this_data.count
+      //      }));
+      //    }
+      //  }
+      //});
   };
 
   this.getBaseURL = function() {
@@ -142,6 +155,19 @@ $(document).ready(function() {
 
   var myMarvel = new MarvelAPI(request_data);
 
+  // Growl defaults
+  var growl_config = {
+    placement: {
+      from: 'bottom',
+      align: 'right'
+    },
+    delay: 100000,
+    allow_dismiss: false
+  };
+
+  var comparison_data = 'series';
+  var comparison_message = _('Obtaining <%= type %> data ...').template();
+
   // Set up caches
   var $jumbotron = $('.jumbotron');
   var $form = $('form');
@@ -150,7 +176,7 @@ $(document).ready(function() {
   var $char2_input = $('#character-input-2').val('');
 
   // DOM and widget
-  $button.on('click', function(e) {
+  $button.on('click', function() {
 
     var char1 = $char1_input.val();
     var char2 = $char2_input.val();
@@ -172,15 +198,30 @@ $(document).ready(function() {
     var character1_data, character2_data;
     var character1, character2;
 
+    // Give some user feedback
+    var growl = $.growl({
+      message: comparison_message({type: $('#select2-chosen-1').text()})
+    }, $.extend({
+      type: 'success'
+    }, growl_config));
+
     // The next is a whee bit confusing
     // First, we need to get the character API to obtain the thumbnail
-    myMarvel.getData(char1).then(function(response) {
+    myMarvel.getData(char1, true).then(function(response) {
 
       // Store the entire character object
       character1 = response.data.results[0];
 
+      // Give some user feedback
+      growl.close();
+      growl = $.growl({
+        message: comparison_message({type: $('#select2-chosen-1').text() + '\'s ' + comparison_data})
+      }, $.extend({
+        type: 'success'
+      }, growl_config));
+
       // Return the promise
-      return myMarvel.getData(character1.id + '/series');
+      return myMarvel.getData(character1.id + '/' + comparison_data, true);
 
     // Now, we need to get the entire series of that character
     }).then(function(response) {
@@ -188,8 +229,16 @@ $(document).ready(function() {
       // Store the character data
       character1_data = myMarvel.parseCharacterData(character1, response);
 
+      // Give some user feedback
+      growl.close();
+      growl = $.growl({
+        message: comparison_message({type: $('#select2-chosen-2').text()})
+      }, $.extend({
+        type: 'success'
+      }, growl_config));
+
       // Get the secondary character information
-      return myMarvel.getData(char2);
+      return myMarvel.getData(char2, true);
 
     // Now, character #2, to obtain their thumbnail
     }).then(function(response) {
@@ -197,8 +246,16 @@ $(document).ready(function() {
       // Store the entire character object
       character2 = response.data.results[0];
 
+      // Give some user feedback
+      growl.close();
+      growl = $.growl({
+        message: comparison_message({type: $('#select2-chosen-2').text() + '\'s ' + comparison_data})
+      }, $.extend({
+        type: 'success'
+      }, growl_config));
+
       // Return the promise
-      return myMarvel.getData(character2.id + '/series');
+      return myMarvel.getData(character2.id + '/' + comparison_data, true);
 
     // Now, character #2, to obtain their series
     }).then(function(response) {
@@ -228,12 +285,22 @@ $(document).ready(function() {
         }
       }
 
+      // Close the final growl if its still around
+      growl.close();
+
       // Finally, lets graph it!
       graphIt('#graph-container', {
         nodes: node_list,
         links: link_list
       });
 
+    }).fail(function(data) {
+      $.growl({
+        message: data.responseText
+      }, $.extend({
+        type: 'danger'
+      }, growl_config));
+    }).always(function() {
       // Hide the spinner
       l.stop();
     });
@@ -262,7 +329,7 @@ $(document).ready(function() {
     }
   };
   $char1_input.select2($.extend(true, select_options, {placeholder: 'Hawkeye'}));
-  $char2_input.select2($.extend(true, select_options, {placeholder: 'Spider-Man'}));
+  $char2_input.select2($.extend(true, select_options, {placeholder: 'Gambit'}));
 
   // Disable form submission, we'll take care of the ajax calls ourself
   $form.submit(function(e) {
